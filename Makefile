@@ -2,7 +2,7 @@ CC=gcc
 route=src/
 
 all: main.o functions.o
-	$(CC) main.o functions.o -o lab3 -Wall -I.
+	$(CC) main.o functions.o -o lab3 -Wall -I. -lncurses
 	rm main.o functions.o
 
 main.o: $(route)main.c

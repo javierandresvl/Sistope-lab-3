@@ -6,7 +6,6 @@ void call_getopt(int argc, char** argv, int *n, int *d, char **nombreArchivo){
 	
 
 	//Obtener parametros.
-	Dflag = 0;
 	opterr = 0;	
 
 	if(argc <= 2){
