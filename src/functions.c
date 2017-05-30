@@ -93,7 +93,7 @@ guerrero* readFile(char *name){
 	}
 	rewind(file);//se devuelve el puntero del archivo al inicio
 	//Se crean los guerreros
-	guerreros = (guerrero*)malloc(sizeof(guerrero)*i);
+	guerreros = (guerrero*)malloc(sizeof(guerrero)*g);
 	//Asignación de memoria
 	hp = (char*)malloc(sizeof(char)*4);
 	color = (char*)malloc(sizeof(char));
@@ -120,6 +120,7 @@ guerrero* readFile(char *name){
 	free(color);
 	free(univ);
 	free(nombre);
+	fclose(file);
 	return guerreros;
 }
 
