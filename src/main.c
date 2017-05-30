@@ -16,12 +16,13 @@ int main(int argc, char** argv)
 
 	/*  Realizo el get opt de los valores de entrada hechos por la consola */
 	int tamanoTablero, Dflag;
+	guerrero *guerreros;
 	char *nombreArchivo = (char*)malloc(sizeof(char) * 100);
 	call_getopt(argc, argv, &tamanoTablero, &Dflag, &nombreArchivo);
+	guerreros = readFile(nombreArchivo);
+	create_screen();
 
-	/* Abro el archivo de entrada */
-	FILE *fp;
-	fp = fopen ( nombreArchivo, "r" );
+
 
 
 	return 0;

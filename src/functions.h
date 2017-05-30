@@ -4,11 +4,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <sys/types.h>
-#include <signal.h>
 #include <string.h>
+#include <ncurses.h>
+#include <pthread.h>
 
-//////// --VARIABLES GLOBALES-- ///////
+
+//////// --ESTRUCTURAS-- ///////
+typedef struct{
+  int hp;
+  int colorUniverso;
+  int numUniverso;
+  char* nombre;
+}guerrero;
 
 
 //////// --FUNCIONES-- ////////
@@ -20,6 +27,14 @@
 */
 void call_getopt(int argc, char** argv, int *n, int *d, char **nombreArchivo);
 
+guerrero* readFile(char* name);
+
+//////// --FUNCIONES PARA PANTALLA-- ////////
+void create_screen();
+
+void createBoard(WINDOW *board, WINDOW *score);
+
+void deleteBoard(WINDOW *board, WINDOW *score);
 /*
    Funcion que verifica si un string representa un numero o no, entrega 0 si es
    un numero y 1 si no.
