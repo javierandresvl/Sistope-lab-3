@@ -26,6 +26,8 @@ pthread_mutex_t mutex;
 int contador_guerreros;
 int **matriz;
 int tamanoTablero;
+WINDOW *board, *score;
+int max_x, max_y;
 
 //////// --FUNCIONES-- ////////
 
@@ -65,9 +67,9 @@ void *pelear(void *arg);
 
 void create_screen();
 
-void createBoard(WINDOW *board, WINDOW *score);
+void createBoard();
 
-void deleteBoard(WINDOW *board, WINDOW *score);
+void deleteBoard();
 
 
 

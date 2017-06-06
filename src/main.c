@@ -46,7 +46,13 @@ int main(int argc, char** argv)
 	}
 
 	/* Creo la ventana con el tablero de juego */
-	//create_screen();
+	create_screen();
+
+	/*
+	mvwprintw(board, 1, 5, "B");
+	wrefresh(board);
+	getchar();
+	*/
 
 	/* Creo el mutex para que no exista condicion de carrera en la matriz*/
 	pthread_mutex_init(&mutex, NULL);
@@ -62,6 +68,12 @@ int main(int argc, char** argv)
 	{
 		pthread_join(hebra[n], NULL);
 	}
-	
+
+
+	getchar();
+
+	deleteBoard(board, score);
+	endwin();
+
 	return 0;
 }
