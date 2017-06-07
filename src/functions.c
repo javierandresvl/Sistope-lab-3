@@ -124,6 +124,7 @@ guerrero* readFile(char *name){
 		strcpy(guerreros[i].nombre, nombre);
 		guerreros[i].fila = -1;
 		guerreros[i].columna = -1;
+		guerreros[i].numGuerrero = i;
 	}
 	//Se libera memoria
 	/*
@@ -168,13 +169,16 @@ void *pelear(void *arg)
 	char ki_s[100];
 	char hp_s[100];
 	int mover;
+	int fila, columna;
 	int fila_mover, columna_mover;
+	int fila_enemigo, columna_enemigo, universo_enemigo; 
+
 	/* printf("%d\n", num_guerrero); */
 
 	/*Primero ingreso el guerrero al tablero*/
 	pthread_mutex_lock(&mutex);
-	int fila = rand() % tamanoTablero;
-	int columna = rand() % tamanoTablero;
+	fila = rand() % tamanoTablero;
+	columna = rand() % tamanoTablero;
 	pthread_mutex_unlock(&mutex);
 
 	/*Voy a modificar el tablero, así que cierro el mutex*/
@@ -189,21 +193,22 @@ void *pelear(void *arg)
 			matriz[fila][columna] = guerreros[num_guerrero].colorUniverso;
 			guerreros[num_guerrero].fila = fila;
 			guerreros[num_guerrero].columna = columna;
+			//printf("%d,%d   %d,%d\n", fila,columna,guerreros[num_guerrero].fila,guerreros[num_guerrero].columna);
 			contador_guerreros++;
-			sprintf(hp_s,"%d",guerreros[num_guerrero].hp);
-			sprintf(ki_s,"%d",ki);
+			sprintf(hp_s,"%04d",guerreros[num_guerrero].hp);
+			sprintf(ki_s,"%04d",ki);
 			mvwprintw(score,num_guerrero+1,3,guerreros[num_guerrero].nombre);
 			mvwprintw(score,num_guerrero+1,max_x/2-4,hp_s);
 			mvwprintw(score,num_guerrero+1,max_x-8,ki_s);
 			wrefresh(score);
 
-			/*
+			
 			attron(COLOR_PAIR(guerreros[num_guerrero].colorUniverso));
 			move(fila+1,columna+1);
 			addch(guerreros[num_guerrero].nombre[0]);
 			attroff(COLOR_PAIR(guerreros[num_guerrero].colorUniverso));
 			refresh();
-			*/
+			
 			
 		}
 		else
@@ -218,20 +223,32 @@ void *pelear(void *arg)
 	while(contador_guerreros != cant_guerreros){
 	}
 
+	pthread_mutex_lock(&mutex);
+	c2 = 0;
+	pthread_mutex_unlock(&mutex);
+
+	fila_mover = guerreros[num_guerrero].fila;
+	columna_mover = guerreros[num_guerrero].columna;
+
 	/* 
 	Este ciclo indica hasta que momento el guerrero estará
 	moviendose y peleando con las demás hebras.
 	 */
 	while(guerreros[num_guerrero].hp > 0)
 	{	
-		usleep(500000);
+		usleep(1000000);
+		
+		//printf("%d,%d  \n",guerreros[num_guerrero].fila,guerreros[num_guerrero].columna);
+
 		/*
 		0: mover hacia arriba
 		1: mover hacia la derecha
 		2: mover hacia abajo
 		3: mover hacia la izquierda
 		*/
+		
 		pthread_mutex_lock(&mutex);
+
 		mover = rand() % 4;
 		//pthread_mutex_unlock(&mutex);
 
@@ -240,19 +257,19 @@ void *pelear(void *arg)
 		switch(mover)
 		{
 			case 0:
-				fila_mover = fila - 1;
+				fila_mover = guerreros[num_guerrero].fila - 1;
 				break;
 			case 1:
-				columna_mover = columna + 1;
+				columna_mover = guerreros[num_guerrero].columna + 1;
 				break;
 			case 2:
-				fila_mover = fila + 1;
+				fila_mover = guerreros[num_guerrero].fila + 1;
 				break;
 			case 3:
-				columna_mover = columna - 1;
+				columna_mover = guerreros[num_guerrero].columna - 1;
 				break;
 		}
-
+		//printf("ME VOY A MOVER\n");
 
 		/*
 		Ahorase verifica si es que se puede mover a la posicion
@@ -277,53 +294,134 @@ void *pelear(void *arg)
 		{
 			//pthread_mutex_lock(&mutex);
 			matriz[fila_mover][columna_mover] = matriz[fila][columna];
+			guerreros[num_guerrero].fila = fila_mover;
+			guerreros[num_guerrero].columna = columna_mover;
 			matriz[fila][columna] = 0;
+
+			//printf("Me movi\n");
+
+			attron(COLOR_PAIR(guerreros[num_guerrero].colorUniverso));
+			mvaddch(fila_mover+1,columna_mover+1,guerreros[num_guerrero].nombre[0]);
+			attroff(COLOR_PAIR(guerreros[num_guerrero].colorUniverso));
+
+			mvaddch(fila+1,columna+1,' ');
+
+
 			//pthread_mutex_unlock(&mutex);
+		}
+		else{
+
+			attron(COLOR_PAIR(guerreros[num_guerrero].colorUniverso));
+			mvaddch(fila+1,columna+1,guerreros[num_guerrero].nombre[0]);
+			attroff(COLOR_PAIR(guerreros[num_guerrero].colorUniverso));
 		}
 
 		//pthread_mutex_lock(&mutex);
-		attron(COLOR_PAIR(guerreros[num_guerrero].colorUniverso));
-		move(fila_mover+1,columna_mover+1);
-		addch(guerreros[num_guerrero].nombre[0]);
-		//mvprintw(fila_mover+1, columna_mover+1, (char*)guerreros[num_guerrero].nombre[0]);
-		attroff(COLOR_PAIR(guerreros[num_guerrero].colorUniverso));
-		
-		
-		if(flag_ocupado == 0){
-			attron(COLOR_PAIR(guerreros[num_guerrero].colorUniverso));
-			move(fila+1,columna+1);
-			addch(' ');
-			attroff(COLOR_PAIR(guerreros[num_guerrero].colorUniverso));
-			
-			
-		}
 
-		refresh();
+		c2++;
+
+		if(c2 == cant_guerreros){
+			/*
+			//printf("HAGO UN REFRESCO\n");
+
+			int i,j;
+			//pthread_mutex_lock(&mutex);
+			for(i = 0; i < tamanoTablero ; i++){
+			for(j = 0; j < tamanoTablero; j++){
+			printf("%d ", matriz[i][j]);
+			}
+			printf("\n");
+			}
+		
+			printf("-------------------------------------------------------------------------------------------------------------\n");
+
+			*/
+			refresh();
+			c2 = 0;
+		}
 
 		pthread_mutex_unlock(&mutex);
 
 		fila = fila_mover;
 		columna = columna_mover;
 
-		
+		ki = ki + 1;
+		pthread_mutex_lock(&mutex);
+		sprintf(ki_s,"%04d",ki);
+		mvwprintw(score,num_guerrero+1,max_x-8,ki_s);
+		wrefresh(score);
+		pthread_mutex_unlock(&mutex);
 
 		/*
-		int i,j;
-		//pthread_mutex_lock(&mutex);
-		for(i = 0; i < tamanoTablero ; i++){
-			for(j = 0; j < tamanoTablero; j++){
-				printf("%d ", matriz[i][j]);
-			}
-			printf("\n");
-		}
-		
-		printf("-------------------------------------------------------------------------------------------------------------\n");
-
-		pthread_mutex_unlock(&mutex);
-		//getchar();
+		Ahora veo a quien voy a golpear
+		revisando que guerrero esta en la posicion adyacente
 		*/
 
+		pthread_mutex_lock(&mutex);
+		for(m = 0; m < cant_guerreros; m++)
+		{
+			fila_enemigo = guerreros[m].fila;
+			columna_enemigo = guerreros[m].columna;
+			universo_enemigo = guerreros[m].numUniverso;
+
+			/* 
+			Ahora veo si el guerrero es de un universo distinto,
+			y además si esta en una casilla adyacente.
+			*/
+			if((guerreros[num_guerrero].numUniverso != universo_enemigo) && ((abs(guerreros[num_guerrero].columna - columna_enemigo) == 1) && (fila_enemigo == guerreros[num_guerrero].fila)) || ((abs(guerreros[num_guerrero].fila - fila_enemigo) == 1) && (columna_enemigo == guerreros[num_guerrero].columna)) )
+			{
+				//printf("estoy en %d,%d y he golpeado a %d,%d\nsoy universo %d y mi enemigo es universo %d\n\n",guerreros[num_guerrero].fila,guerreros[num_guerrero].columna,fila_enemigo,columna_enemigo,guerreros[num_guerrero].numUniverso,universo_enemigo);
+				guerreros[m].hp = guerreros[m].hp - (ki * 5);
+				ki = 1;
+
+				sprintf(ki_s,"%04d",ki);
+				mvwprintw(score,num_guerrero+1,max_x-8,ki_s);
+				wrefresh(score);
+
+				attron(COLOR_PAIR(100 - guerreros[m].colorUniverso));
+				mvaddch(fila_enemigo+1,columna_enemigo+1,guerreros[m].nombre[0]);
+				attroff(COLOR_PAIR(100 - guerreros[m].colorUniverso));
+				refresh();
+
+				sprintf(hp_s,"%04d",guerreros[m].hp);
+				mvwprintw(score,guerreros[m].numGuerrero + 1,max_x/2-4,hp_s);
+				wrefresh(score);
+			}
+
+		}
+		pthread_mutex_unlock(&mutex);		
 		//printf("%d\n", mover);
+
+	}
+
+	pthread_mutex_lock(&mutex);
+	attron(COLOR_PAIR(guerreros[num_guerrero].colorUniverso));
+	mvaddch(guerreros[num_guerrero].fila+1,guerreros[num_guerrero].columna+1,' ');
+	attroff(COLOR_PAIR(guerreros[num_guerrero].colorUniverso));
+	refresh();
+	
+	guerreros[num_guerrero].fila = -10;
+	guerreros[num_guerrero].columna = -10;
+
+	sprintf(hp_s,"%04d",0);
+	sprintf(ki_s,"%04d",0);
+	mvwprintw(score,num_guerrero+1,3,"MUERTO");
+	mvwprintw(score,num_guerrero+1,max_x/2-4,hp_s);
+	mvwprintw(score,num_guerrero+1,max_x-8,ki_s);
+	wrefresh(score);	
+	pthread_mutex_unlock(&mutex);
+
+	/* 
+	Cuando se muere un peleador, hay que verificar
+	si el juego ya ha terminado o no.
+	*/
+
+	int ganador;
+	ganador = finish();
+	if(ganador != -1){
+		deleteBoard(board, score);
+		endwin();
+		printf("GANO EL UNIVERSO: %d\n", ganador);
 	}
 
 }
@@ -392,4 +490,33 @@ void create_screen(){
 		init_pair(92, COLOR_YELLOW, COLOR_RED);
 		init_pair(91,10,COLOR_RED);
 	}
+}
+
+int finish()
+{
+	int flag, m, last;
+	flag = 1;
+	guerrero g;
+	last = 0;
+
+	pthread_mutex_lock(&mutex);
+	for(m = 0; m < cant_guerreros; m++)
+	{
+		g = guerreros[m];
+		if(g.hp > 0)
+		{
+			if((last != g.numUniverso)&&(last != 0))
+			{	
+				pthread_mutex_unlock(&mutex);
+				return -1;
+			}
+			else
+			{
+				last = g.numUniverso;
+			}
+		}
+
+	}
+	pthread_mutex_unlock(&mutex);
+	return last;
 }

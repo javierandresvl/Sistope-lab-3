@@ -17,13 +17,14 @@ typedef struct{
   char* nombre;
   int fila;
   int columna;
+  int numGuerrero;
 }guerrero;
 
 //////// -- VAR. GLOBALES -- ///////
 int cant_guerreros;
 guerrero* guerreros;
 pthread_mutex_t mutex;
-int contador_guerreros;
+int contador_guerreros, c2;
 int **matriz;
 int tamanoTablero;
 WINDOW *board, *score;
@@ -61,6 +62,11 @@ void resumen();
 
 */
 void *pelear(void *arg);
+
+/*
+
+*/
+int finish();
 
 
 //////// --FUNCIONES PARA PANTALLA-- ////////

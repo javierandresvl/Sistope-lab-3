@@ -69,11 +69,7 @@ int main(int argc, char** argv)
 		pthread_join(hebra[n], NULL);
 	}
 
-
 	getchar();
-
-	deleteBoard(board, score);
-	endwin();
 
 	return 0;
 }
