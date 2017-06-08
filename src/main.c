@@ -26,12 +26,9 @@ int main(int argc, char** argv)
 	contador_guerreros = 0;
 	guerreros = readFile(nombreArchivo);
 	matriz = (int**)malloc(sizeof(int*) * tamanoTablero);
-	for (n = 0; n < tamanoTablero; n++)
-	{
-		matriz[n] = (int*)malloc(sizeof(int) * tamanoTablero);
-	}
 	for(n = 0; n < tamanoTablero; n++)
 	{
+		matriz[n] = (int*)malloc(sizeof(int) * tamanoTablero);
 		for(m = 0; m < tamanoTablero; m++)
 		{
 			matriz[n][m] = 0;
@@ -48,16 +45,10 @@ int main(int argc, char** argv)
 	/* Creo la ventana con el tablero de juego */
 	create_screen();
 
-	/*
-	mvwprintw(board, 1, 5, "B");
-	wrefresh(board);
-	getchar();
-	*/
-
 	/* Creo el mutex para que no exista condicion de carrera en la matriz*/
 	pthread_mutex_init(&mutex, NULL);
 
-	srand(time(NULL)); 
+	srand(time(NULL));
 	pthread_t hebra[cant_guerreros];
 	for(n = 0; n < cant_guerreros; n++)
 	{
@@ -68,7 +59,6 @@ int main(int argc, char** argv)
 	{
 		pthread_join(hebra[n], NULL);
 	}
-
 	getchar();
 
 	return 0;

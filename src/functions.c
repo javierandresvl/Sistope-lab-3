@@ -106,17 +106,7 @@ guerrero* readFile(char *name){
 	nombre = (char*)malloc(sizeof(char)*100);
 	for(i=0;i<g;i++){
 		fscanf(file, "%d %d %d %s", &hp, &color, &univ, nombre);
-		/*index = 0;
-		c = fgetc(file);
-		while(c != '\n'){
-			nombre[index] = c;
-			index++;
-			c = fgetc(file);
-		}
-		nombre[index] = '\0';//para que finalize el string
 		//Colocar atributos al guerrero
-		*/
-		printf("%s\n", nombre);
 		guerreros[i].hp = hp;
 		guerreros[i].colorUniverso = color;
 		guerreros[i].numUniverso = univ;
@@ -127,14 +117,9 @@ guerrero* readFile(char *name){
 		guerreros[i].numGuerrero = i;
 	}
 	//Se libera memoria
-	/*
-	free(hp);
-	free(color);
-	free(univ);
-	*/
 	free(nombre);
 
-	
+
 	fclose(file);
 
 	cant_guerreros = g;
@@ -161,9 +146,9 @@ void resumen()
 }
 
 void *pelear(void *arg)
-{	
+{
 	usleep(1);
-	int flag1, flag2, flag3, m, n, flag_ocupado,  burbuja;
+	int flag1, flag2, flag3, m, n, flag_ocupado,  burbuja, ganador;
 	int num_guerrero = (int *) arg;
 	int ki = 0;
 	char ki_s[100];
@@ -171,9 +156,7 @@ void *pelear(void *arg)
 	int mover;
 	int fila, columna;
 	int fila_mover, columna_mover;
-	int fila_enemigo, columna_enemigo, universo_enemigo; 
-
-	/* printf("%d\n", num_guerrero); */
+	int fila_enemigo, columna_enemigo, universo_enemigo;
 
 	/*Primero ingreso el guerrero al tablero*/
 	pthread_mutex_lock(&mutex);
@@ -188,12 +171,11 @@ void *pelear(void *arg)
 	{
 		flag1 = matriz[fila][columna];
 		if(flag1 != 1)
-		{	
+		{
 			flag2 = 0;
 			matriz[fila][columna] = guerreros[num_guerrero].colorUniverso;
 			guerreros[num_guerrero].fila = fila;
 			guerreros[num_guerrero].columna = columna;
-			//printf("%d,%d   %d,%d\n", fila,columna,guerreros[num_guerrero].fila,guerreros[num_guerrero].columna);
 			contador_guerreros++;
 			sprintf(hp_s,"%04d",guerreros[num_guerrero].hp);
 			sprintf(ki_s,"%04d",ki);
@@ -202,14 +184,14 @@ void *pelear(void *arg)
 			mvwprintw(score,num_guerrero+1,max_x-8,ki_s);
 			wrefresh(score);
 
-			
+
 			attron(COLOR_PAIR(guerreros[num_guerrero].colorUniverso));
 			move(fila+1,columna+1);
 			addch(guerreros[num_guerrero].nombre[0]);
 			attroff(COLOR_PAIR(guerreros[num_guerrero].colorUniverso));
 			refresh();
-			
-			
+
+
 		}
 		else
 		{
@@ -230,15 +212,13 @@ void *pelear(void *arg)
 	fila_mover = guerreros[num_guerrero].fila;
 	columna_mover = guerreros[num_guerrero].columna;
 
-	/* 
+	/*
 	Este ciclo indica hasta que momento el guerrero estará
 	moviendose y peleando con las demás hebras.
 	 */
 	while(guerreros[num_guerrero].hp > 0)
-	{	
-		usleep(1000000);
-		
-		//printf("%d,%d  \n",guerreros[num_guerrero].fila,guerreros[num_guerrero].columna);
+	{
+		usleep(10000);
 
 		/*
 		0: mover hacia arriba
@@ -246,7 +226,7 @@ void *pelear(void *arg)
 		2: mover hacia abajo
 		3: mover hacia la izquierda
 		*/
-		
+
 		pthread_mutex_lock(&mutex);
 
 		mover = rand() % 4;
@@ -269,7 +249,6 @@ void *pelear(void *arg)
 				columna_mover = guerreros[num_guerrero].columna - 1;
 				break;
 		}
-		//printf("ME VOY A MOVER\n");
 
 		/*
 		Ahorase verifica si es que se puede mover a la posicion
@@ -279,10 +258,7 @@ void *pelear(void *arg)
 		*/
 		if((columna_mover >= 0) && (fila_mover >= 0) && (fila_mover < tamanoTablero) &&(columna_mover < tamanoTablero))
 		{
-			//pthread_mutex_lock(&mutex);
 			flag_ocupado = matriz[fila_mover][columna_mover];
-			//pthread_mutex_unlock(&mutex);
-			//printf("%d\n", flag_ocupado);
 		}
 		else
 		{
@@ -292,13 +268,10 @@ void *pelear(void *arg)
 		}
 		if(flag_ocupado == 0)
 		{
-			//pthread_mutex_lock(&mutex);
 			matriz[fila_mover][columna_mover] = matriz[fila][columna];
 			guerreros[num_guerrero].fila = fila_mover;
 			guerreros[num_guerrero].columna = columna_mover;
 			matriz[fila][columna] = 0;
-
-			//printf("Me movi\n");
 
 			attron(COLOR_PAIR(guerreros[num_guerrero].colorUniverso));
 			mvaddch(fila_mover+1,columna_mover+1,guerreros[num_guerrero].nombre[0]);
@@ -306,8 +279,6 @@ void *pelear(void *arg)
 
 			mvaddch(fila+1,columna+1,' ');
 
-
-			//pthread_mutex_unlock(&mutex);
 		}
 		else{
 
@@ -316,26 +287,9 @@ void *pelear(void *arg)
 			attroff(COLOR_PAIR(guerreros[num_guerrero].colorUniverso));
 		}
 
-		//pthread_mutex_lock(&mutex);
-
 		c2++;
 
 		if(c2 == cant_guerreros){
-			/*
-			//printf("HAGO UN REFRESCO\n");
-
-			int i,j;
-			//pthread_mutex_lock(&mutex);
-			for(i = 0; i < tamanoTablero ; i++){
-			for(j = 0; j < tamanoTablero; j++){
-			printf("%d ", matriz[i][j]);
-			}
-			printf("\n");
-			}
-		
-			printf("-------------------------------------------------------------------------------------------------------------\n");
-
-			*/
 			refresh();
 			c2 = 0;
 		}
@@ -364,13 +318,12 @@ void *pelear(void *arg)
 			columna_enemigo = guerreros[m].columna;
 			universo_enemigo = guerreros[m].numUniverso;
 
-			/* 
+			/*
 			Ahora veo si el guerrero es de un universo distinto,
 			y además si esta en una casilla adyacente.
 			*/
 			if((guerreros[num_guerrero].numUniverso != universo_enemigo) && ((abs(guerreros[num_guerrero].columna - columna_enemigo) == 1) && (fila_enemigo == guerreros[num_guerrero].fila)) || ((abs(guerreros[num_guerrero].fila - fila_enemigo) == 1) && (columna_enemigo == guerreros[num_guerrero].columna)) )
 			{
-				//printf("estoy en %d,%d y he golpeado a %d,%d\nsoy universo %d y mi enemigo es universo %d\n\n",guerreros[num_guerrero].fila,guerreros[num_guerrero].columna,fila_enemigo,columna_enemigo,guerreros[num_guerrero].numUniverso,universo_enemigo);
 				guerreros[m].hp = guerreros[m].hp - (ki * 5);
 				ki = 1;
 
@@ -389,8 +342,7 @@ void *pelear(void *arg)
 			}
 
 		}
-		pthread_mutex_unlock(&mutex);		
-		//printf("%d\n", mover);
+		pthread_mutex_unlock(&mutex);
 
 	}
 
@@ -399,7 +351,7 @@ void *pelear(void *arg)
 	mvaddch(guerreros[num_guerrero].fila+1,guerreros[num_guerrero].columna+1,' ');
 	attroff(COLOR_PAIR(guerreros[num_guerrero].colorUniverso));
 	refresh();
-	
+
 	guerreros[num_guerrero].fila = -10;
 	guerreros[num_guerrero].columna = -10;
 
@@ -408,27 +360,28 @@ void *pelear(void *arg)
 	mvwprintw(score,num_guerrero+1,3,"MUERTO");
 	mvwprintw(score,num_guerrero+1,max_x/2-4,hp_s);
 	mvwprintw(score,num_guerrero+1,max_x-8,ki_s);
-	wrefresh(score);	
+	wrefresh(score);
 	pthread_mutex_unlock(&mutex);
 
-	/* 
+	/*
 	Cuando se muere un peleador, hay que verificar
 	si el juego ya ha terminado o no.
 	*/
 
-	int ganador;
+	pthread_mutex_lock(&mutex_ganador);
 	ganador = finish();
 	if(ganador != -1){
-		deleteBoard(board, score);
+		deleteBoard();
 		endwin();
 		printf("GANO EL UNIVERSO: %d\n", ganador);
 	}
+	pthread_mutex_unlock(&mutex_ganador);
 
 }
 
 //Funciones pantalla.
 void createBoard(){
-	
+
 	int score_size = 12;
 
 	getmaxyx(stdscr, max_y, max_x);
@@ -455,9 +408,6 @@ void create_screen(){
 	curs_set(FALSE);
 	refresh();
 	createBoard(board, score);
-	//getch();//wait
-	//deleteBoard(board, score);
-	//endwin();
 
 	if (has_colors())
 	{
@@ -506,7 +456,7 @@ int finish()
 		if(g.hp > 0)
 		{
 			if((last != g.numUniverso)&&(last != 0))
-			{	
+			{
 				pthread_mutex_unlock(&mutex);
 				return -1;
 			}
